@@ -13,6 +13,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/nlepage/go-cuid2 v0.0.0-20230222103644-564b856c0c2a // indirect
+	github.com/rabbitmq/amqp091-go v1.8.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/uptrace/bun v1.1.14 // indirect
