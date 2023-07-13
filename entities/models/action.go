@@ -1,6 +1,9 @@
 package models
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 type Action uint8
 
@@ -26,24 +29,24 @@ func (a *Action) String() string {
 	}[*a]
 }
 
-func (a *Action) FromString(s string) Action {
+func (a *Action) FromString(s string) (Action, error) {
 	switch s {
 	case "NavigateXpath":
-		return NavigateXpath
+		return NavigateXpath, nil
 	case "NavigateSelector":
-		return NavigateSelector
+		return NavigateSelector, nil
 	case "ClickXpath":
-		return ClickXpath
+		return ClickXpath, nil
 	case "ClickSelector":
-		return ClickSelector
+		return ClickSelector, nil
 	case "ScrollDown":
-		return ScrollDown
+		return ScrollDown, nil
 	case "CaptureXpath":
-		return CaptureXpath
+		return CaptureXpath, nil
 	case "CaptureSelector":
-		return CaptureSelector
+		return CaptureSelector, nil
 	default:
-		return NavigateXpath
+		return NavigateXpath, fmt.Errorf("invalid action %s", s)
 	}
 }
 
@@ -57,7 +60,12 @@ func (a *Action) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	*a = a.FromString(s)
+	action, err := a.FromString(s)
+	if err != nil {
+		return err
+	}
+
+	*a = action
 	return nil
 }
 
