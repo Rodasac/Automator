@@ -18,6 +18,8 @@ import (
 	"github.com/uptrace/bun/extra/bundebug"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -26,8 +28,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
 
 	dsn := os.Getenv("DATABASE_URL")
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))

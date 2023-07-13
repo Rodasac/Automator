@@ -3,6 +3,7 @@ package consumer
 import (
 	"automator-go/adapters/controllers/tasks"
 	"automator-go/entities/models"
+	"context"
 	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -14,6 +15,7 @@ type RabbitTaskQueueConsumer struct {
 	ch             *amqp.Channel
 	chName         string
 	consumerName   string
+	ctx            context.Context
 }
 
 func NewRabbitTaskQueueConsumer(
@@ -21,8 +23,15 @@ func NewRabbitTaskQueueConsumer(
 	ch *amqp.Channel,
 	chName string,
 	consumerName string,
+	ctx context.Context,
 ) RabbitTaskQueueConsumer {
-	return RabbitTaskQueueConsumer{taskController: taskController, ch: ch, chName: chName, consumerName: consumerName}
+	return RabbitTaskQueueConsumer{
+		taskController: taskController,
+		ch:             ch,
+		chName:         chName,
+		consumerName:   consumerName,
+		ctx:            ctx,
+	}
 }
 
 func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
@@ -50,8 +59,6 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
 	if err != nil {
 		return fmt.Errorf("error consuming queue: %w", err)
 	}
-
-	var forever chan struct{}
 
 	go func() {
 		for d := range msgs {
@@ -87,7 +94,7 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
 	}()
 
 	log.Printf(" [*] Waiting for tasks. To exit press CTRL+C")
-	<-forever
+	<-t.ctx.Done()
 
 	return nil
 }
