@@ -51,4 +51,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = browser.Close()
+	if err != nil {
+		log.Fatalf("error closing browser: %s", err.Error())
+	}
 }
