@@ -1,0 +1,40 @@
+[
+  {
+    "id": "1",
+    "title": "Pokedex",
+    "description": "Pokedex - Pokefanaticos",
+    "url": "https://pokefanaticos.com/pokedex/pokedex-aleatorio/",
+    "country": "VE",
+    "with_proxy": false,
+    "actions": [
+      {
+        "id": "1",
+        "label": "Scroll down",
+        "type": "ScrollDown",
+        "value": "2"
+      },
+      {
+        "id": "2",
+        "label": "Capture screenshot",
+        "type": "CaptureSelector",
+        "value": "body > app-root > div:nth-child(3) > div > div > app-pokemon-data > div > div > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "title": "Wikipedia",
+    "description": "Random article",
+    "url": "https://en.wikipedia.org/wiki/Special:Random",
+    "country": "VE",
+    "with_proxy": false,
+    "actions": [
+      {
+        "id": "2",
+        "label": "Capture screenshot",
+        "type": "CaptureSelector",
+        "value": "#firstHeading"
+      }
+    ]
+  }
+]
