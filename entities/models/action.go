@@ -8,49 +8,53 @@ import (
 type Action uint8
 
 const (
-	NavigateXpath Action = iota
-	NavigateSelector
-	ClickXpath
-	ClickSelector
+	Navigate Action = iota
+	Click
 	ScrollDown
-	CaptureXpath
-	CaptureSelector
+	Capture
 	WaitSeconds
+	WriteInput
+	SelectOptions
+	WriteTime
+	ClearInput
 )
 
 func (a *Action) String() string {
 	return [...]string{
-		"NavigateXpath",
-		"NavigateSelector",
-		"ClickXpath",
-		"ClickSelector",
+		"Navigate",
+		"Click",
 		"ScrollDown",
-		"CaptureXpath",
-		"CaptureSelector",
+		"Capture",
 		"WaitSeconds",
+		"WriteInput",
+		"SelectOptions",
+		"WriteTime",
+		"ClearInput",
 	}[*a]
 }
 
 func (a *Action) FromString(s string) (Action, error) {
 	switch s {
-	case "NavigateXpath":
-		return NavigateXpath, nil
-	case "NavigateSelector":
-		return NavigateSelector, nil
-	case "ClickXpath":
-		return ClickXpath, nil
-	case "ClickSelector":
-		return ClickSelector, nil
+	case "Navigate":
+		return Navigate, nil
+	case "Click":
+		return Click, nil
 	case "ScrollDown":
 		return ScrollDown, nil
-	case "CaptureXpath":
-		return CaptureXpath, nil
-	case "CaptureSelector":
-		return CaptureSelector, nil
+	case "Capture":
+		return Capture, nil
 	case "WaitSeconds":
 		return WaitSeconds, nil
+	case "WriteInput":
+		return WriteInput, nil
+	case "ClearInput":
+		return ClearInput, nil
+	case "SelectOptions":
+		return SelectOptions, nil
+	case "WriteTime":
+		return WriteTime, nil
 	default:
-		return NavigateXpath, fmt.Errorf("invalid action %s", s)
+		return Navigate, fmt.Errorf("invalid action %s", s)
 	}
 }
 

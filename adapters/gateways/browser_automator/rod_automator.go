@@ -43,47 +43,51 @@ func (at *RodAutomator) Run(taskToRun *models.Task) (*[]task.RawMedia, error) {
 
 	for _, action := range taskToRun.Actions {
 		switch action.Type {
-		case models.NavigateXpath:
-			err = navigateXpath(page, action)
+		case models.Navigate:
+			err = navigate(page, action)
 			if err != nil {
 				return nil, fmt.Errorf("error navigating xpath: %w", err)
 			}
-		case models.NavigateSelector:
-			err = navigateSelector(page, action)
-			if err != nil {
-				return nil, fmt.Errorf("error navigating css: %w", err)
-			}
-		case models.ClickXpath:
-			err = clickXpath(page, action)
+		case models.Click:
+			err = click(page, action)
 			if err != nil {
 				return nil, fmt.Errorf("error clicking xpath: %w", err)
-			}
-		case models.ClickSelector:
-			err = clickSelector(page, action)
-			if err != nil {
-				return nil, fmt.Errorf("error clicking css: %w", err)
 			}
 		case models.ScrollDown:
 			err = scrollDown(page, action)
 			if err != nil {
 				return nil, fmt.Errorf("error scrolling down: %w", err)
 			}
-		case models.CaptureXpath:
-			rawMedia, err := captureXpath(page, action)
+		case models.Capture:
+			rawMedia, err := capture(page, action)
 			if err != nil {
 				return nil, fmt.Errorf("error capturing xpath: %w", err)
-			}
-			rawMedias = append(rawMedias, *rawMedia)
-		case models.CaptureSelector:
-			rawMedia, err := captureSelector(page, action)
-			if err != nil {
-				return nil, fmt.Errorf("error capturing css: %w", err)
 			}
 			rawMedias = append(rawMedias, *rawMedia)
 		case models.WaitSeconds:
 			err = waitSeconds(action)
 			if err != nil {
 				return nil, fmt.Errorf("error waiting seconds: %w", err)
+			}
+		case models.WriteInput:
+			err = writeInput(page, action)
+			if err != nil {
+				return nil, fmt.Errorf("error writing input: %w", err)
+			}
+		case models.ClearInput:
+			err = clearInput(page, action)
+			if err != nil {
+				return nil, fmt.Errorf("error clearing input: %w", err)
+			}
+		case models.SelectOptions:
+			err = selectOptions(page, action)
+			if err != nil {
+				return nil, fmt.Errorf("error selecting options: %w", err)
+			}
+		case models.WriteTime:
+			err = writeTime(page, action)
+			if err != nil {
+				return nil, fmt.Errorf("error writing time on input: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("unknown action type: %s", action.Type.String())

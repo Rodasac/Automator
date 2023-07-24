@@ -11,36 +11,40 @@ func TestAction_String(t *testing.T) {
 		a    Action
 	}{
 		{
-			name: "NavigateXpath",
-			a:    NavigateXpath,
+			name: "Navigate",
+			a:    Navigate,
 		},
 		{
-			name: "NavigateSelector",
-			a:    NavigateSelector,
-		},
-		{
-			name: "ClickXpath",
-			a:    ClickXpath,
-		},
-		{
-			name: "ClickSelector",
-			a:    ClickSelector,
+			name: "Click",
+			a:    Click,
 		},
 		{
 			name: "ScrollDown",
 			a:    ScrollDown,
 		},
 		{
-			name: "CaptureXpath",
-			a:    CaptureXpath,
-		},
-		{
-			name: "CaptureSelector",
-			a:    CaptureSelector,
+			name: "Capture",
+			a:    Capture,
 		},
 		{
 			name: "WaitSeconds",
 			a:    WaitSeconds,
+		},
+		{
+			name: "WriteInput",
+			a:    WriteInput,
+		},
+		{
+			name: "ClearInput",
+			a:    ClearInput,
+		},
+		{
+			name: "SelectOptions",
+			a:    SelectOptions,
+		},
+		{
+			name: "WriteTime",
+			a:    WriteTime,
 		},
 	}
 
@@ -63,23 +67,13 @@ func TestAction_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "NavigateXpath",
-			a:       NavigateXpath,
+			name:    "Navigate",
+			a:       Navigate,
 			wantErr: false,
 		},
 		{
-			name:    "NavigateSelector",
-			a:       NavigateSelector,
-			wantErr: false,
-		},
-		{
-			name:    "ClickXpath",
-			a:       ClickXpath,
-			wantErr: false,
-		},
-		{
-			name:    "ClickSelector",
-			a:       ClickSelector,
+			name:    "Click",
+			a:       Click,
 			wantErr: false,
 		},
 		{
@@ -88,18 +82,33 @@ func TestAction_MarshalJSON(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "CaptureXpath",
-			a:       CaptureXpath,
-			wantErr: false,
-		},
-		{
-			name:    "CaptureSelector",
-			a:       CaptureSelector,
+			name:    "Capture",
+			a:       Capture,
 			wantErr: false,
 		},
 		{
 			name:    "WaitSeconds",
 			a:       WaitSeconds,
+			wantErr: false,
+		},
+		{
+			name:    "WriteInput",
+			a:       WriteInput,
+			wantErr: false,
+		},
+		{
+			name:    "ClearInput",
+			a:       ClearInput,
+			wantErr: false,
+		},
+		{
+			name:    "SelectOptions",
+			a:       SelectOptions,
+			wantErr: false,
+		},
+		{
+			name:    "WriteTime",
+			a:       WriteTime,
 			wantErr: false,
 		},
 	}
@@ -125,23 +134,13 @@ func TestAction_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "NavigateXpath",
-			value:   []byte("\"NavigateXpath\""),
+			name:    "Navigate",
+			value:   []byte("\"Navigate\""),
 			wantErr: false,
 		},
 		{
-			name:    "NavigateSelector",
-			value:   []byte("\"NavigateSelector\""),
-			wantErr: false,
-		},
-		{
-			name:    "ClickXpath",
-			value:   []byte("\"ClickXpath\""),
-			wantErr: false,
-		},
-		{
-			name:    "ClickSelector",
-			value:   []byte("\"ClickSelector\""),
+			name:    "Click",
+			value:   []byte("\"Click\""),
 			wantErr: false,
 		},
 		{
@@ -150,18 +149,33 @@ func TestAction_UnmarshalJSON(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "CaptureXpath",
-			value:   []byte("\"CaptureXpath\""),
-			wantErr: false,
-		},
-		{
-			name:    "CaptureSelector",
-			value:   []byte("\"CaptureSelector\""),
+			name:    "Capture",
+			value:   []byte("\"Capture\""),
 			wantErr: false,
 		},
 		{
 			name:    "WaitSeconds",
 			value:   []byte("\"WaitSeconds\""),
+			wantErr: false,
+		},
+		{
+			name:    "WriteInput",
+			value:   []byte("\"WriteInput\""),
+			wantErr: false,
+		},
+		{
+			name:    "ClearInput",
+			value:   []byte("\"ClearInput\""),
+			wantErr: false,
+		},
+		{
+			name:    "SelectOptions",
+			value:   []byte("\"SelectOptions\""),
+			wantErr: false,
+		},
+		{
+			name:    "WriteTime",
+			value:   []byte("\"WriteTime\""),
 			wantErr: false,
 		},
 		{

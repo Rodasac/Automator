@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./initdbs.sql:/docker-entrypoint-initdb.d/initdbs.sql
+      - postgres-data:/var/lib/postgresql/data
+
+
+volumes:
+  postgres-data:

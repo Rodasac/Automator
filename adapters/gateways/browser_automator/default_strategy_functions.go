@@ -2,34 +2,43 @@ package browser_automator
 
 import (
 	"automator-go/entities/models"
+	"automator-go/entities/validation"
 	"automator-go/usecases/task"
 	"fmt"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 	"strconv"
+	"strings"
 	"time"
 )
 
-func findElementX(page *rod.Page, action models.TaskAction) (*rod.Element, error) {
-	element, err := page.ElementX(action.Value)
+const (
+	timeLayout = "2006-01-02T15:04:05Z04:00"
+)
+
+func findElement(page *rod.Page, action models.TaskAction) (*rod.Element, error) {
+	var element *rod.Element
+	var err error
+	if validation.IsXpath(action.Value) {
+		element, err = page.ElementX(action.Value)
+	} else {
+		element, err = page.Element(action.Value)
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("error getting element by xpath: %w", err)
+		return nil, fmt.Errorf("error getting element by selector: %w", err)
 	}
 
 	return element, nil
 }
 
-func findElementSelector(page *rod.Page, action models.TaskAction) (*rod.Element, error) {
-	element, err := page.Element(action.Value)
+func click(page *rod.Page, action models.TaskAction) error {
+	element, err := findElement(page, action)
 	if err != nil {
-		return nil, fmt.Errorf("error getting element by css selector: %w", err)
+		return err
 	}
 
-	return element, nil
-}
-
-func click(element *rod.Element) error {
-	err := element.Click(proto.InputMouseButtonLeft, 1)
+	err = element.Click(proto.InputMouseButtonLeft, 1)
 	if err != nil {
 		return fmt.Errorf("error clicking element: %w", err)
 	}
@@ -37,62 +46,13 @@ func click(element *rod.Element) error {
 	return nil
 }
 
-func navigateXpath(page *rod.Page, action models.TaskAction) error {
-	element, err := findElementX(page, action)
-	if err != nil {
-		return err
-	}
-
-	err = click(element)
+func navigate(page *rod.Page, action models.TaskAction) error {
+	err := click(page, action)
 	if err != nil {
 		return err
 	}
 
 	page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
-
-	return nil
-}
-
-func navigateSelector(page *rod.Page, action models.TaskAction) error {
-	element, err := findElementSelector(page, action)
-	if err != nil {
-		return err
-	}
-
-	err = click(element)
-	if err != nil {
-		return err
-	}
-
-	page.WaitNavigation(proto.PageLifecycleEventNameNetworkAlmostIdle)
-
-	return nil
-}
-
-func clickXpath(page *rod.Page, action models.TaskAction) error {
-	element, err := findElementX(page, action)
-	if err != nil {
-		return err
-	}
-
-	err = click(element)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func clickSelector(page *rod.Page, action models.TaskAction) error {
-	element, err := findElementSelector(page, action)
-	if err != nil {
-		return err
-	}
-
-	err = click(element)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
@@ -129,7 +89,7 @@ func captureElement(element *rod.Element) ([]byte, error) {
 	return bin, nil
 }
 
-func capture(page *rod.Page, element *rod.Element) (*task.RawMedia, error) {
+func _captureAction(page *rod.Page, element *rod.Element) (*task.RawMedia, error) {
 	mediaScreenshot, err := captureElement(element)
 	if err != nil {
 		return nil, err
@@ -165,22 +125,13 @@ func capture(page *rod.Page, element *rod.Element) (*task.RawMedia, error) {
 	}, nil
 }
 
-func captureXpath(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
-	element, err := findElementX(page, action)
+func capture(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
+	element, err := findElement(page, action)
 	if err != nil {
 		return nil, err
 	}
 
-	return capture(page, element)
-}
-
-func captureSelector(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
-	element, err := findElementSelector(page, action)
-	if err != nil {
-		return nil, err
-	}
-
-	return capture(page, element)
+	return _captureAction(page, element)
 }
 
 func waitSeconds(action models.TaskAction) error {
@@ -195,6 +146,71 @@ func waitSeconds(action models.TaskAction) error {
 	}
 
 	time.Sleep(time.Duration(seconds) * time.Second)
+
+	return nil
+}
+
+func writeInput(page *rod.Page, action models.TaskAction) error {
+	element, err := findElement(page, action)
+	if err != nil {
+		return err
+	}
+
+	err = element.Input(action.Value)
+	if err != nil {
+		return fmt.Errorf("error writing input: %w", err)
+	}
+
+	return nil
+}
+
+func clearInput(page *rod.Page, action models.TaskAction) error {
+	element, err := findElement(page, action)
+	if err != nil {
+		return err
+	}
+
+	err = element.SelectAllText()
+	if err != nil {
+		return fmt.Errorf("error selecting text on input: %w", err)
+	}
+
+	err = element.Input("")
+	if err != nil {
+		return fmt.Errorf("error clearing input: %w", err)
+	}
+
+	return nil
+}
+
+func selectOptions(page *rod.Page, action models.TaskAction) error {
+	element, err := findElement(page, action)
+	if err != nil {
+		return err
+	}
+
+	parsedOptions := strings.Split(action.Value, ",")
+
+	err = element.Select(parsedOptions, true, rod.SelectorTypeText)
+	if err != nil {
+		return fmt.Errorf("error selecting option: %w", err)
+	}
+
+	return nil
+}
+
+func writeTime(page *rod.Page, action models.TaskAction) error {
+	element, err := findElement(page, action)
+	if err != nil {
+		return err
+	}
+
+	timeToWrite, err := time.Parse(timeLayout, action.Value)
+
+	err = element.InputTime(timeToWrite)
+	if err != nil {
+		return fmt.Errorf("error writing time: %w", err)
+	}
 
 	return nil
 }
