@@ -38,6 +38,10 @@ func TestAction_String(t *testing.T) {
 			name: "CaptureSelector",
 			a:    CaptureSelector,
 		},
+		{
+			name: "WaitSeconds",
+			a:    WaitSeconds,
+		},
 	}
 
 	for _, tt := range tests {
@@ -91,6 +95,11 @@ func TestAction_MarshalJSON(t *testing.T) {
 		{
 			name:    "CaptureSelector",
 			a:       CaptureSelector,
+			wantErr: false,
+		},
+		{
+			name:    "WaitSeconds",
+			a:       WaitSeconds,
 			wantErr: false,
 		},
 	}
@@ -148,6 +157,11 @@ func TestAction_UnmarshalJSON(t *testing.T) {
 		{
 			name:    "CaptureSelector",
 			value:   []byte("\"CaptureSelector\""),
+			wantErr: false,
+		},
+		{
+			name:    "WaitSeconds",
+			value:   []byte("\"WaitSeconds\""),
 			wantErr: false,
 		},
 		{

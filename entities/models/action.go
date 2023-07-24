@@ -15,6 +15,7 @@ const (
 	ScrollDown
 	CaptureXpath
 	CaptureSelector
+	WaitSeconds
 )
 
 func (a *Action) String() string {
@@ -26,6 +27,7 @@ func (a *Action) String() string {
 		"ScrollDown",
 		"CaptureXpath",
 		"CaptureSelector",
+		"WaitSeconds",
 	}[*a]
 }
 
@@ -45,6 +47,8 @@ func (a *Action) FromString(s string) (Action, error) {
 		return CaptureXpath, nil
 	case "CaptureSelector":
 		return CaptureSelector, nil
+	case "WaitSeconds":
+		return WaitSeconds, nil
 	default:
 		return NavigateXpath, fmt.Errorf("invalid action %s", s)
 	}
