@@ -45,7 +45,7 @@ func (p *Processor) Process(task *models.Task) error {
 
 		hashWithoutKind := strings.Split(hash, ":")[1]
 
-		storageMedia, err := p.storageMediaAdapter.SaveMedia(hashWithoutKind, mediaResult.Media, mediaResult.Screenshot)
+		storageMedia, err := p.storageMediaAdapter.SaveMedia(hashWithoutKind, &mediaResult)
 		if err != nil {
 			return err
 		}
@@ -61,6 +61,7 @@ func (p *Processor) Process(task *models.Task) error {
 			Filename:      storageMedia.Filename,
 			MediaUrl:      storageMedia.Media,
 			ScreenshotUrl: storageMedia.Screenshot,
+			ResourceUrl:   storageMedia.Resource,
 			TaskId:        task.Id,
 		})
 		if err != nil {

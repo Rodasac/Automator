@@ -6,10 +6,10 @@ import (
 )
 
 type mockTaskQueueConsumerAdapter struct {
-	Err error
+	Err []error
 }
 
-func (m *mockTaskQueueConsumerAdapter) ConsumeTasks() error {
+func (m *mockTaskQueueConsumerAdapter) ConsumeTasks() []error {
 	return m.Err
 }
 
@@ -26,7 +26,7 @@ func TestStartConsumer(t *testing.T) {
 		},
 		{
 			name:    "Test consumer with error",
-			adapter: &mockTaskQueueConsumerAdapter{Err: errors.New("error")},
+			adapter: &mockTaskQueueConsumerAdapter{Err: []error{errors.New("error")}},
 			wantErr: true,
 		},
 	}

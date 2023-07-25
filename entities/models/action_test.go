@@ -46,6 +46,10 @@ func TestAction_String(t *testing.T) {
 			name: "WriteTime",
 			a:    WriteTime,
 		},
+		{
+			name: "DownloadResource",
+			a:    DownloadResource,
+		},
 	}
 
 	for _, tt := range tests {
@@ -109,6 +113,11 @@ func TestAction_MarshalJSON(t *testing.T) {
 		{
 			name:    "WriteTime",
 			a:       WriteTime,
+			wantErr: false,
+		},
+		{
+			name:    "DownloadResource",
+			a:       DownloadResource,
 			wantErr: false,
 		},
 	}
@@ -179,8 +188,18 @@ func TestAction_UnmarshalJSON(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "DownloadResource",
+			value:   []byte("\"DownloadResource\""),
+			wantErr: false,
+		},
+		{
 			name:    "Invalid",
 			value:   []byte("\"Invalid\""),
+			wantErr: true,
+		},
+		{
+			name:    "Empty",
+			value:   []byte("\"\""),
 			wantErr: true,
 		},
 	}

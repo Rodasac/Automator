@@ -14,6 +14,7 @@ type Media struct {
 	Filename      string                 `json:"filename"`
 	MediaUrl      string                 `json:"media_url"`
 	ScreenshotUrl string                 `json:"screenshot_url"`
+	ResourceUrl   string                 `json:"resource_url"`
 	TaskId        string                 `json:"task_id"`
 	CreatedAt     time.Time              `json:"created_at"`
 	UpdatedAt     time.Time              `json:"updated_at"`

@@ -19,6 +19,7 @@ type Media struct {
 	Filename      string                 `bun:"filename,notnull"`
 	MediaUrl      string                 `bun:"media_url,notnull"`
 	ScreenshotUrl string                 `bun:"screenshot_url,notnull"`
+	ResourceUrl   string                 `bun:"resource_url,nullzero"`
 	TaskId        string                 `bun:"task_id,notnull"`
 	CreatedAt     time.Time              `bun:"created_at,nullzero,notnull,default:current_timestamp"`
 	UpdatedAt     time.Time              `bun:"updated_at,nullzero,notnull,default:current_timestamp"`

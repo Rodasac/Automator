@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -82,6 +83,7 @@ func scrollDown(page *rod.Page, action models.TaskAction) error {
 
 func captureElement(element *rod.Element) ([]byte, error) {
 	bin, err := element.Screenshot(proto.PageCaptureScreenshotFormatPng, 0)
+
 	if err != nil {
 		return nil, fmt.Errorf("error capturing element: %w", err)
 	}
@@ -89,7 +91,7 @@ func captureElement(element *rod.Element) ([]byte, error) {
 	return bin, nil
 }
 
-func _captureAction(page *rod.Page, element *rod.Element) (*task.RawMedia, error) {
+func _captureAction(page *rod.Page, element *rod.Element, resource bool) (*task.RawMedia, error) {
 	mediaScreenshot, err := captureElement(element)
 	if err != nil {
 		return nil, err
@@ -114,9 +116,33 @@ func _captureAction(page *rod.Page, element *rod.Element) (*task.RawMedia, error
 		return nil, fmt.Errorf("error getting page info: %w", err)
 	}
 
+	extension := "png"
+
+	var resourceCapture []byte
+	if resource {
+		err = element.WaitLoad()
+		if err != nil {
+			return nil, fmt.Errorf("error waiting resource to load: %w", err)
+		}
+
+		src, err := element.Property("currentSrc")
+		if err != nil {
+			return nil, fmt.Errorf("error getting element currentSrc: %w", err)
+		}
+		srcSplit := strings.Split(src.String(), ".")
+		extension = srcSplit[len(srcSplit)-1]
+
+		resourceCapture, err = element.Resource()
+		if err != nil {
+			return nil, fmt.Errorf("error getting element resource: %w", err)
+		}
+	}
+
 	return &task.RawMedia{
+		Ext:        extension,
 		Media:      mediaScreenshot,
 		Screenshot: pageScreenshot,
+		Resource:   resourceCapture,
 		Height:     box.Height,
 		Width:      box.Width,
 		X:          box.X,
@@ -131,7 +157,21 @@ func capture(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
 		return nil, err
 	}
 
-	return _captureAction(page, element)
+	timeOutStableEnv := os.Getenv("BROWSER_WAIT_STABLE_TIMEOUT")
+	if strings.TrimSpace(timeOutStableEnv) == "" {
+		timeOutStableEnv = "5s"
+	}
+
+	timeOutStable, err := time.ParseDuration(timeOutStableEnv)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing timeout stable env: %w", err)
+	}
+
+	if err = page.WaitStable(timeOutStable, 1); err != nil {
+		return nil, fmt.Errorf("error waiting element to load: %w", err)
+	}
+
+	return _captureAction(page, element, false)
 }
 
 func waitSeconds(action models.TaskAction) error {
@@ -213,4 +253,13 @@ func writeTime(page *rod.Page, action models.TaskAction) error {
 	}
 
 	return nil
+}
+
+func downloadResource(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
+	element, err := findElement(page, action)
+	if err != nil {
+		return nil, err
+	}
+
+	return _captureAction(page, element, true)
 }

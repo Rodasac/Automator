@@ -17,6 +17,7 @@ const (
 	SelectOptions
 	WriteTime
 	ClearInput
+	DownloadResource
 )
 
 func (a *Action) String() string {
@@ -30,6 +31,7 @@ func (a *Action) String() string {
 		"SelectOptions",
 		"WriteTime",
 		"ClearInput",
+		"DownloadResource",
 	}[*a]
 }
 
@@ -53,6 +55,8 @@ func (a *Action) FromString(s string) (Action, error) {
 		return SelectOptions, nil
 	case "WriteTime":
 		return WriteTime, nil
+	case "DownloadResource":
+		return DownloadResource, nil
 	default:
 		return Navigate, fmt.Errorf("invalid action %s", s)
 	}

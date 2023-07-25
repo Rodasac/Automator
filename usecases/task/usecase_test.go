@@ -24,7 +24,7 @@ type MockStorageMediaAdapter struct {
 	Error error
 }
 
-func (m *MockStorageMediaAdapter) SaveMedia(string, []byte, []byte) (StorageMedia, error) {
+func (m *MockStorageMediaAdapter) SaveMedia(string, *RawMedia) (StorageMedia, error) {
 	return StorageMedia{}, m.Error
 }
 
@@ -56,12 +56,13 @@ func TestProcessor(t *testing.T) {
 			{
 				Id:    "1",
 				Label: "Navigate",
-				Type:  models.NavigateSelector,
+				Type:  models.Navigate,
 				Value: "input[name='q']",
 			},
 		},
 	}
 	media := &RawMedia{
+		Ext:        "png",
 		Media:      []byte("test"),
 		Screenshot: []byte("test"),
 		Attributes: map[string]interface{}{

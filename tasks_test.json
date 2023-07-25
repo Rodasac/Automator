@@ -23,6 +23,22 @@
   },
   {
     "id": "2",
+    "title": "Wikipedia With Resource",
+    "description": "Download resources",
+    "url": "https://en.wikipedia.org/wiki/Tony_Bennett",
+    "country": "VE",
+    "with_proxy": false,
+    "actions": [
+      {
+        "id": "1",
+        "label": "Download resource",
+        "type": "DownloadResource",
+        "value": "#mw-content-text > div.mw-parser-output > table.infobox.biography.vcard > tbody > tr:nth-child(2) > td > span > a > img"
+      }
+    ]
+  },
+  {
+    "id": "3",
     "title": "Wikipedia",
     "description": "Random article",
     "url": "https://en.wikipedia.org/wiki/Special:Random",
@@ -30,7 +46,7 @@
     "with_proxy": false,
     "actions": [
       {
-        "id": "2",
+        "id": "1",
         "label": "Capture screenshot",
         "type": "Capture",
         "value": "#firstHeading"

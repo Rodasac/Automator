@@ -1,7 +1,7 @@
 package main
 
 import (
-	"automator-go/main/migrations"
+	"automator-go/main/db/migrations"
 	"context"
 	"database/sql"
 	"fmt"

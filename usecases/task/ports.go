@@ -5,8 +5,10 @@ import (
 )
 
 type RawMedia struct {
+	Ext        string
 	Media      []byte
 	Screenshot []byte
+	Resource   []byte
 	Attributes map[string]interface{}
 	Height     float64
 	Width      float64
@@ -23,10 +25,11 @@ type StorageMedia struct {
 	Filename   string
 	Media      string
 	Screenshot string
+	Resource   string
 }
 
 type StorageMediaAdapter interface {
-	SaveMedia(hashName string, media []byte, screenshot []byte) (StorageMedia, error)
+	SaveMedia(hashName string, media *RawMedia) (StorageMedia, error)
 }
 
 type NewMediaInput struct {
@@ -40,6 +43,7 @@ type NewMediaInput struct {
 	Filename      string
 	MediaUrl      string
 	ScreenshotUrl string
+	ResourceUrl   string
 	TaskId        string
 }
 

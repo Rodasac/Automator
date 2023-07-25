@@ -1,18 +1,42 @@
 package tasks
 
 import (
+	"automator-go/adapters/gateways/browser_automator"
+	"automator-go/adapters/gateways/hasher"
+	storage2 "automator-go/adapters/gateways/storage"
+	bunRepo "automator-go/adapters/repositories/bun"
 	"automator-go/entities/models"
 	"automator-go/usecases/task"
+	"context"
+	"github.com/go-rod/rod"
+	"github.com/uptrace/bun"
+	"go.uber.org/zap"
 )
 
 type TaskController struct {
-	use_case task.ProcessorUseCase
+	browser *rod.Browser
+	db      *bun.DB
+	ctx     context.Context
+	logger  *zap.Logger
 }
 
-func NewTaskController(use_case task.ProcessorUseCase) *TaskController {
-	return &TaskController{use_case: use_case}
+func NewTaskController(
+	browser *rod.Browser,
+	db *bun.DB,
+	ctx context.Context,
+	logger *zap.Logger,
+) *TaskController {
+	return &TaskController{browser: browser, db: db, ctx: ctx, logger: logger}
 }
 
 func (t *TaskController) ProcessTask(taskToProcess *models.Task) error {
-	return t.use_case.Process(taskToProcess)
+	t.logger.Debug("Initializing task processor")
+	automator := browser_automator.NewRodAutomator(t.browser, t.logger)
+	storage := storage2.NewFileStorage("png", t.logger)
+	mediaRepo := bunRepo.NewBunCaptureMedia(t.db, &t.ctx)
+	hashHandler := hasher.NewPHashHandler(t.logger)
+	taskUseCase := task.NewProcessor(automator, mediaRepo, storage, hashHandler)
+	t.logger.Debug("Finished initializing task processor")
+
+	return taskUseCase.Process(taskToProcess)
 }

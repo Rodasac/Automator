@@ -8,6 +8,6 @@ func NewTaskQueueConsumer(adapter TaskQueueConsumerAdapter) *TaskQueueConsumer {
 	return &TaskQueueConsumer{adapter: adapter}
 }
 
-func (tqc *TaskQueueConsumer) StartConsumer() error {
+func (tqc *TaskQueueConsumer) StartConsumer() []error {
 	return tqc.adapter.ConsumeTasks()
 }

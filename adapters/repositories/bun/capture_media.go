@@ -35,6 +35,7 @@ func (b *BunCaptureMedia) Save(input task.NewMediaInput) error {
 		Filename:      input.Filename,
 		MediaUrl:      input.MediaUrl,
 		ScreenshotUrl: input.ScreenshotUrl,
+		ResourceUrl:   input.ResourceUrl,
 		TaskId:        input.TaskId,
 	}
 
