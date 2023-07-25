@@ -1,6 +1,6 @@
 - [x] Refactor task actions to add more options:
   - [x] Add write on input action (colors in the future).
   - [x] Add wait seconds action.
-  - [x] Study how to save images inside a website. (Video in the future).
+  - [x] Study how to save images and videos inside a website.
 - [x] Abstract actions task execution by strategies (for previous or post process actions [login, logout, etc.])
 - [ ] Add grpc server to provide a way for another services to execute tasks or to retrieve tasks results.

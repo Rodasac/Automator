@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
+	"io"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -132,9 +134,36 @@ func _captureAction(page *rod.Page, element *rod.Element, resource bool) (*task.
 		srcSplit := strings.Split(src.String(), ".")
 		extension = srcSplit[len(srcSplit)-1]
 
-		resourceCapture, err = element.Resource()
-		if err != nil {
-			return nil, fmt.Errorf("error getting element resource: %w", err)
+		video := false
+		for _, videoExtension := range VideoExtensions {
+			if extension == videoExtension {
+				video = true
+				break
+			}
+		}
+
+		if video {
+			httpClient := http.DefaultClient
+			getVideo, err := httpClient.Get(src.String())
+			defer func(Body io.ReadCloser) {
+				err := Body.Close()
+				if err != nil {
+					println("error closing video body")
+				}
+			}(getVideo.Body)
+			if err != nil {
+				return nil, fmt.Errorf("error getting video: %w", err)
+			}
+
+			resourceCapture, err = io.ReadAll(getVideo.Body)
+			if err != nil {
+				return nil, fmt.Errorf("error reading video: %w", err)
+			}
+		} else {
+			resourceCapture, err = element.Resource()
+			if err != nil {
+				return nil, fmt.Errorf("error getting element resource: %w", err)
+			}
 		}
 	}
 

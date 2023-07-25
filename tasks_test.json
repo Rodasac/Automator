@@ -52,5 +52,33 @@
         "value": "#firstHeading"
       }
     ]
+  },
+  {
+    "id": "4",
+    "title": "Wikipedia Video",
+    "description": "Wikipedia video resource",
+    "url": "https://en.wikipedia.org/wiki/Video",
+    "country": "VE",
+    "with_proxy": false,
+    "actions": [
+      {
+        "id": "1",
+        "label": "Click video link",
+        "type": "Click",
+        "value": "#mw-content-text > div.mw-parser-output > figure:nth-child(9) > span > span > a"
+      },
+      {
+        "id": "3",
+        "label": "Wait for video",
+        "type": "WaitSeconds",
+        "value": "1"
+      },
+      {
+          "id": "3",
+          "label": "Download resource",
+          "type": "DownloadResource",
+          "value": "#mwe_player_0_html5_api"
+      }
+    ]
   }
 ]

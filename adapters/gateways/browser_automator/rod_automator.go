@@ -32,12 +32,6 @@ func (at *RodAutomator) Run(taskToRun *models.Task) (*[]task.RawMedia, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating page: %w", err)
 	}
-	defer func(page *rod.Page) {
-		err := page.Close()
-		if err != nil {
-			println("error closing page: " + err.Error())
-		}
-	}(page)
 	at.logger.Debug("Created page")
 
 	pageTimeOutEnv := os.Getenv("BROWSER_PAGE_TIMEOUT_BY_TASK")
