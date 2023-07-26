@@ -1,20 +1,27 @@
 package main
 
 import (
-	controllerConsumer "automator-go/adapters/controllers/consumer"
-	taskControllers "automator-go/adapters/controllers/tasks"
+	automatorGrpc "automator-go/adapters/controllers/grpc"
+	bun2 "automator-go/adapters/repositories/bun"
 	"context"
 	"database/sql"
-	"github.com/go-rod/rod"
+	"flag"
+	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 	"os"
 	"os/signal"
+)
+
+var (
+	port = flag.Int("port", 50051, "The server port")
 )
 
 func main() {
@@ -47,39 +54,29 @@ func main() {
 		bundebug.FromEnv("BUNDEBUG"),
 	))
 
-	browser := rod.New().Context(ctx)
-	err = browser.Connect()
+	repo := bun2.NewBunCaptureMedia(db)
+
+	flag.Parse()
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 	if err != nil {
-		zapLogger.Fatal("error connecting to browser", zap.Error(err))
+		log.Fatalf("failed to listen: %v", err)
 	}
-	zapLogger.Debug("Connected to browser")
 
-	pagePool := rod.NewPagePool(3)
-
-	taskController := taskControllers.NewTaskController(browser, pagePool, db, ctx, zapLogger)
-	consumerController := controllerConsumer.NewFileConsumerController(taskController, zapLogger)
+	s := grpc.NewServer()
+	automatorGrpc.RegisterMediaServiceServer(s, automatorGrpc.NewGrpcServer(repo, zapLogger))
 
 	go func() {
-		errs := consumerController.ConsumeTasks()
-		if errs != nil && len(errs) > 0 {
-			zapLogger.Fatal("error processing tasks", zap.Errors("errors", errs))
+		zapLogger.Info("Starting server...")
+		if err := s.Serve(lis); err != nil {
+			zapLogger.Fatal("failed to serve: %v", zap.Error(err))
 		}
-
-		// Because this is a file consumer we finish here.
-		// But, this may not occur on streams implementations.
-		stop()
-		pagePool.Cleanup(func(page *rod.Page) {
-			err := page.Close()
-			if err != nil {
-				zapLogger.Error("error closing page", zap.Error(err))
-			}
-		})
 	}()
 
 	select {
 	case <-ctx.Done():
-		zapLogger.Info("Exiting...")
-		stop()
+		s.GracefulStop()
+		_ = lis.Close()
+		zapLogger.Info("Exiting server...")
 
 		return
 	}

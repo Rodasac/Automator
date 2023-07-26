@@ -3,6 +3,7 @@ package task
 import (
 	"automator-go/entities/models"
 	"automator-go/usecases/hasher"
+	"context"
 	"errors"
 	"testing"
 )
@@ -32,8 +33,20 @@ type MockCapturedMediaRepository struct {
 	Error error
 }
 
-func (m *MockCapturedMediaRepository) Save(NewMediaInput) error {
+func (m *MockCapturedMediaRepository) Save(NewMediaInput, context.Context) error {
 	return m.Error
+}
+
+func (m *MockCapturedMediaRepository) GetMedia(string, context.Context) (*models.Media, error) {
+	return &models.Media{}, m.Error
+}
+
+func (m *MockCapturedMediaRepository) GetMediaByHash(string, context.Context) (*models.Media, error) {
+	return &models.Media{}, m.Error
+}
+
+func (m *MockCapturedMediaRepository) GetMedias(*MediaFilter, context.Context) ([]*models.Media, error) {
+	return []*models.Media{}, m.Error
 }
 
 type MockImageHasher struct {
@@ -158,7 +171,7 @@ func TestProcessor(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			processor := NewProcessor(tt.automatorTaskAdapter, tt.capturedMediaRepo, tt.storageMediaAdapter, tt.imageHasher)
-			err := processor.Process(tt.task)
+			err := processor.Process(tt.task, context.TODO())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Processor.Process() error = %v, wantErr %v", err, tt.wantErr)
 				return

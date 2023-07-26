@@ -5,7 +5,6 @@ import (
 	"automator-go/usecases/task"
 	"fmt"
 	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/proto"
 	"go.uber.org/zap"
 	"os"
 	"strings"
@@ -13,26 +12,29 @@ import (
 )
 
 type RodAutomator struct {
-	browser *rod.Browser
-	logger  *zap.Logger
+	browser  *rod.Browser
+	pagePool rod.PagePool
+	logger   *zap.Logger
 }
 
-func NewRodAutomator(browser *rod.Browser, logger *zap.Logger) *RodAutomator {
-	return &RodAutomator{browser: browser, logger: logger}
+func NewRodAutomator(browser *rod.Browser, pagePool rod.PagePool, logger *zap.Logger) *RodAutomator {
+	return &RodAutomator{browser: browser, pagePool: pagePool, logger: logger}
+}
+
+func (at *RodAutomator) createPage() *rod.Page {
+	return at.browser.MustPage()
 }
 
 func (at *RodAutomator) Run(taskToRun *models.Task) (*[]task.RawMedia, error) {
-	err := at.browser.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("error connecting to browser: %w", err)
-	}
-	at.logger.Debug("Connected to browser")
+	at.logger.Debug("Getting page from pool")
+	page := at.pagePool.Get(at.createPage)
+	defer at.pagePool.Put(page)
 
-	page, err := at.browser.Page(proto.TargetCreateTarget{URL: taskToRun.Url})
+	err := page.Navigate(taskToRun.Url)
 	if err != nil {
-		return nil, fmt.Errorf("error creating page: %w", err)
+		return nil, fmt.Errorf("error navigating to url: %w", err)
 	}
-	at.logger.Debug("Created page")
+	at.logger.Debug("Page initialized and navigated to url")
 
 	pageTimeOutEnv := os.Getenv("BROWSER_PAGE_TIMEOUT_BY_TASK")
 	if strings.TrimSpace(pageTimeOutEnv) == "" {

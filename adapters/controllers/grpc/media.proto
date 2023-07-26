@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package grpc;
+option go_package = "grpc/";
+
+import "google/protobuf/struct.proto";
+
+message Media {
+    string id = 1;
+    google.protobuf.Struct attributes = 2;
+    double height = 3;
+    double width = 4;
+    double x = 5;
+    double y = 6;
+    string url = 7;
+    string phash = 8;
+    string filename = 9;
+    string media_url = 10;
+    string screenshot_url = 11;
+    string resource_url = 12;
+    string task_id = 13;
+    string created_at = 14;
+    string updated_at = 15;
+    string deleted_at = 16;
+}
+
+message MediaIdParam {
+    string id = 1;
+}
+
+message MediaHashParam {
+    string phash = 1;
+}
+
+enum MediaOrder {
+    MEDIA_ORDER_ASC = 0;
+    MEDIA_ORDER_DESC = 1;
+}
+
+message MediaFiltersParam {
+    optional string hash = 1;
+    optional string created_at = 2;
+    optional string task_id = 3;
+    optional MediaOrder order = 4;
+}
+
+message MediaResponse {
+    Media media = 1;
+}
+
+message MediaListResponse {
+    repeated Media media = 1;
+}
+
+service MediaService {
+    rpc GetMediaById (MediaIdParam) returns (MediaResponse) {}
+    rpc GetMediaByHash (MediaHashParam) returns (MediaResponse) {}
+    rpc GetMediaList (MediaFiltersParam) returns (MediaListResponse) {}
+}

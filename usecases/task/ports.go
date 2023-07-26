@@ -2,6 +2,8 @@ package task
 
 import (
 	"automator-go/entities/models"
+	"context"
+	"time"
 )
 
 type RawMedia struct {
@@ -47,10 +49,30 @@ type NewMediaInput struct {
 	TaskId        string
 }
 
+type Order string
+
+const (
+	ASC  Order = "ASC"
+	DESC Order = "DESC"
+)
+
+type MediaFilter struct {
+	Hash      *string
+	CreatedAt *time.Time
+	TaskId    *string
+	Order     *Order
+}
+
 type CapturedMediaRepository interface {
-	Save(input NewMediaInput) error
+	GetMedia(mediaId string, ctx context.Context) (*models.Media, error)
+	GetMediaByHash(hash string, ctx context.Context) (*models.Media, error)
+	GetMedias(filter *MediaFilter, ctx context.Context) ([]*models.Media, error)
+	Save(input NewMediaInput, ctx context.Context) error
 }
 
 type ProcessorUseCase interface {
-	Process(task *models.Task) error
+	GetMedia(mediaId string, ctx context.Context) (*models.Media, error)
+	GetMediaByHash(hash string, ctx context.Context) (*models.Media, error)
+	GetMedias(filter *MediaFilter, ctx context.Context) ([]*models.Media, error)
+	Process(task *models.Task, ctx context.Context) error
 }

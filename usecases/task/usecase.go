@@ -3,6 +3,7 @@ package task
 import (
 	"automator-go/entities/models"
 	"automator-go/usecases/hasher"
+	"context"
 	"strings"
 )
 
@@ -27,7 +28,7 @@ func NewProcessor(
 	}
 }
 
-func (p *Processor) Process(task *models.Task) error {
+func (p *Processor) Process(task *models.Task, ctx context.Context) error {
 	mediaResult, err := p.automatorTaskAdapter.Run(task)
 	if err != nil {
 		return err
@@ -63,11 +64,38 @@ func (p *Processor) Process(task *models.Task) error {
 			ScreenshotUrl: storageMedia.Screenshot,
 			ResourceUrl:   storageMedia.Resource,
 			TaskId:        task.Id,
-		})
+		}, ctx)
 		if err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (p *Processor) GetMedia(mediaId string, ctx context.Context) (*models.Media, error) {
+	media, err := p.capturedMediaRepo.GetMedia(mediaId, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return media, nil
+}
+
+func (p *Processor) GetMediaByHash(hash string, ctx context.Context) (*models.Media, error) {
+	media, err := p.capturedMediaRepo.GetMediaByHash(hash, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return media, nil
+}
+
+func (p *Processor) GetMedias(filter *MediaFilter, ctx context.Context) ([]*models.Media, error) {
+	medias, err := p.capturedMediaRepo.GetMedias(filter, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return medias, nil
 }

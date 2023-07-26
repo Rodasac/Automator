@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"os"
+	"sync"
 )
 
 type TaskQueueConsumerFromJSONFile struct {
@@ -35,13 +36,37 @@ func (t TaskQueueConsumerFromJSONFile) ConsumeTasks() []error {
 		return []error{err}
 	}
 
-	errors := make([]error, 0)
+	wg := sync.WaitGroup{}
+	wg.Add(len(tasksToProcess))
+	errorsChan := make(chan error, len(tasksToProcess))
 	for _, task := range tasksToProcess {
-		t.logger.Info("Processing task", zap.String("task_id", task.Id))
-		err = t.taskController.ProcessTask(&task)
-		if err != nil {
-			errors = append(errors, fmt.Errorf("error processing task: %s: %w", task.Id, err))
+		taskToProcess := task
+		go func() {
+			defer func() {
+				wg.Done()
+				t.logger.Debug("Finished processing task", zap.String("task_id", taskToProcess.Id))
+			}()
+
+			t.logger.Info("Processing task", zap.String("task_id", taskToProcess.Id))
+			err := t.taskController.ProcessTask(&taskToProcess)
+			if err != nil {
+				errorsChan <- fmt.Errorf("error processing task: %s: %w", taskToProcess.Id, err)
+			}
+		}()
+	}
+	wg.Wait()
+	close(errorsChan)
+
+	t.logger.Debug("Finished processing all tasks")
+
+	errors := make([]error, 0)
+	for {
+		err, ok := <-errorsChan
+		if !ok {
+			break
 		}
+
+		errors = append(errors, err)
 	}
 
 	return errors
