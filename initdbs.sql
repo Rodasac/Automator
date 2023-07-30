@@ -1,3 +1,3 @@
-CREATE DATABASE automator;
+CREATE DATABASE robot;
 CREATE DATABASE robot_config;
-CREATE DATABASE aurosystem;
+CREATE DATABASE automator_backend;
