@@ -3,8 +3,10 @@
   - [x] Add wait seconds action.
   - [x] Study how to save images and videos inside a website.
 - [x] Abstract actions task execution by strategies (for previous or post process actions [login, logout, etc.])
-- [x] Add grpc server to provide a way for another services to execute tasks or to retrieve tasks results.
-- [x] Add pagination to grpc server.
-- [ ] Add API KEY authentication to grpc server.
+- [x] Add a robot grpc server to provide a way for another services to retrieve tasks results.
+- [x] Add pagination to the robot grpc server.
+- [ ] Add API KEY authentication to the robot grpc server.
+- [ ] Add Telemetry to the robot component.
+- [ ] Add robot binary to use the queue consumer.
 - [ ] Add integration tests.
 - [ ] Create build and test pipeline strategy.

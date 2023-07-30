@@ -17,6 +17,7 @@ import (
 	"os/signal"
 )
 
+// This is meant to be used for testing purposes only.
 func main() {
 	err := godotenv.Load()
 	if err != nil {
