@@ -88,6 +88,10 @@ func (b *CaptureMedia) GetMedias(filter *task.MediaFilter, ctx context.Context) 
 		query.Order("created_at " + string(*filter.Order))
 	}
 
+	if filter.Limit != nil {
+		query.Limit(int(*filter.Limit))
+	}
+
 	err := query.Scan(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error getting medias: %w", err)

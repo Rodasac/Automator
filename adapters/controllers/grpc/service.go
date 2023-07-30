@@ -63,6 +63,7 @@ func (g *grpcServer) GetMediaList(ctx context.Context, param *MediaFiltersParam)
 		CreatedAt: createdAt,
 		TaskId:    param.TaskId,
 		Order:     orderBy,
+		Limit:     param.Limit,
 	}
 
 	mediasModel, err := g.dbRepo.GetMedias(&filters, ctx)

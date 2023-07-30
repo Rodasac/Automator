@@ -61,6 +61,7 @@ type MediaFilter struct {
 	CreatedAt *time.Time
 	TaskId    *string
 	Order     *Order
+	Limit     *int32
 }
 
 type CapturedMediaRepository interface {
