@@ -71,8 +71,5 @@ type CapturedMediaRepository interface {
 }
 
 type ProcessorUseCase interface {
-	GetMedia(mediaId string, ctx context.Context) (*models.Media, error)
-	GetMediaByHash(hash string, ctx context.Context) (*models.Media, error)
-	GetMedias(filter *MediaFilter, ctx context.Context) ([]*models.Media, error)
 	Process(task *models.Task, ctx context.Context) error
 }
