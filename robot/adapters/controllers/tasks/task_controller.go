@@ -3,7 +3,7 @@ package tasks
 import (
 	"automator-go/robot/adapters/gateways/browser_automator"
 	"automator-go/robot/adapters/gateways/hasher"
-	storage2 "automator-go/robot/adapters/gateways/storage"
+	"automator-go/robot/adapters/gateways/storage"
 	bunRepo "automator-go/robot/adapters/repositories/bun"
 	"automator-go/robot/entities/models"
 	"automator-go/robot/usecases/task"
@@ -40,10 +40,10 @@ func NewTaskController(
 func (t *TaskController) ProcessTask(taskToProcess *models.Task) error {
 	t.logger.Debug("Initializing task processor")
 	automator := browser_automator.NewRodAutomator(t.browser, t.pagePool, t.logger)
-	storage := storage2.NewFileStorage("png", t.logger)
+	fileStorage := storage.NewFileStorage("png", t.logger)
 	mediaRepo := bunRepo.NewBunCaptureMedia(t.db)
 	hashHandler := hasher.NewPHashHandler(t.logger)
-	taskUseCase := task.NewProcessor(automator, mediaRepo, storage, hashHandler)
+	taskUseCase := task.NewProcessor(automator, mediaRepo, fileStorage, hashHandler)
 	t.logger.Debug("Finished initializing task processor")
 
 	return taskUseCase.Process(taskToProcess, t.ctx)

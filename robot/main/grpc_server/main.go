@@ -1,9 +1,9 @@
 package main
 
 import (
-	grpc3 "automator-go/grpc"
-	grpc2 "automator-go/robot/adapters/controllers/grpc"
-	bun2 "automator-go/robot/adapters/repositories/bun"
+	grpcDef "automator-go/grpc"
+	grpcController "automator-go/robot/adapters/controllers/grpc"
+	bunRepo "automator-go/robot/adapters/repositories/bun"
 	"context"
 	"database/sql"
 	"flag"
@@ -55,7 +55,7 @@ func main() {
 		bundebug.FromEnv("BUNDEBUG"),
 	))
 
-	repo := bun2.NewBunCaptureMedia(db)
+	repo := bunRepo.NewBunCaptureMedia(db)
 
 	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
@@ -63,8 +63,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
-	grpc3.RegisterMediaServiceServer(s, grpc2.NewGrpcServer(repo, zapLogger))
+	authInterceptor := grpcController.NewAuthInterceptor(zapLogger)
+	s := grpc.NewServer(
+		grpc.UnaryInterceptor(authInterceptor.Unary()),
+		grpc.StreamInterceptor(authInterceptor.Stream()),
+	)
+	grpcDef.RegisterMediaServiceServer(s, grpcController.NewGrpcServer(repo, zapLogger))
 
 	go func() {
 		zapLogger.Info("Starting server...", zap.Int("port", *port))

@@ -5,7 +5,7 @@
 - [x] Abstract actions task execution by strategies (for previous or post process actions [login, logout, etc.])
 - [x] Add a robot grpc server to provide a way for another services to retrieve tasks results.
 - [x] Add pagination to the robot grpc server.
-- [ ] Add API KEY authentication to the robot grpc server.
+- [x] Add API KEY authentication to the robot grpc server.
 - [ ] Add Telemetry to the robot component.
 - [ ] Add robot binary to use the queue consumer.
 - [ ] Add integration tests.
