@@ -4,17 +4,17 @@ import (
 	"automator-go/robot/adapters/controllers/tasks"
 	adapterConsumer "automator-go/robot/adapters/gateways/consumer"
 	"automator-go/robot/usecases/consumer"
-	"go.uber.org/zap"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 )
 
 type FileConsumerController struct {
 	taskController *tasks.TaskController
-	logger         *zap.Logger
+	logger         *otelzap.LoggerWithCtx
 }
 
 func NewFileConsumerController(
 	taskController *tasks.TaskController,
-	logger *zap.Logger,
+	logger *otelzap.LoggerWithCtx,
 ) FileConsumerController {
 	return FileConsumerController{taskController: taskController, logger: logger}
 }

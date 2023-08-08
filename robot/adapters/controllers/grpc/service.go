@@ -5,6 +5,7 @@ import (
 	"automator-go/robot/usecases/task"
 	"context"
 	"fmt"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"time"
 )
@@ -13,10 +14,10 @@ type grpcServer struct {
 	grpc.UnimplementedMediaServiceServer
 
 	dbRepo task.CapturedMediaRepository
-	logger *zap.Logger
+	logger *otelzap.Logger
 }
 
-func NewGrpcServer(dbRepo task.CapturedMediaRepository, logger *zap.Logger) grpc.MediaServiceServer {
+func NewGrpcServer(dbRepo task.CapturedMediaRepository, logger *otelzap.Logger) grpc.MediaServiceServer {
 	return &grpcServer{
 		dbRepo: dbRepo,
 		logger: logger,
@@ -24,7 +25,7 @@ func NewGrpcServer(dbRepo task.CapturedMediaRepository, logger *zap.Logger) grpc
 }
 
 func (g *grpcServer) GetMediaById(ctx context.Context, param *grpc.MediaIdParam) (*grpc.MediaResponse, error) {
-	g.logger.Debug("GetMediaById", zap.String("id", param.GetId()))
+	g.logger.Ctx(ctx).Debug("GetMediaById", zap.String("id", param.GetId()))
 	mediaModel, err := g.dbRepo.GetMedia(param.GetId(), ctx)
 	if err != nil {
 		return nil, err
@@ -34,7 +35,7 @@ func (g *grpcServer) GetMediaById(ctx context.Context, param *grpc.MediaIdParam)
 }
 
 func (g *grpcServer) GetMediaByHash(ctx context.Context, param *grpc.MediaHashParam) (*grpc.MediaResponse, error) {
-	g.logger.Debug("GetMediaByHash", zap.String("hash", param.GetPhash()))
+	g.logger.Ctx(ctx).Debug("GetMediaByHash", zap.String("hash", param.GetPhash()))
 	mediaModel, err := g.dbRepo.GetMediaByHash(param.GetPhash(), ctx)
 	if err != nil {
 		return nil, err
@@ -44,6 +45,7 @@ func (g *grpcServer) GetMediaByHash(ctx context.Context, param *grpc.MediaHashPa
 }
 
 func (g *grpcServer) GetMediaList(ctx context.Context, param *grpc.MediaFiltersParam) (*grpc.MediaListResponse, error) {
+	g.logger.Ctx(ctx).Debug("GetMediaList", zap.Any("param", param))
 	createdAt := new(time.Time)
 	if param.CreatedAt != nil {
 		parsedTime, err := time.Parse(time.RFC3339, param.GetCreatedAt())

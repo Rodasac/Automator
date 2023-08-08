@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/corona10/goimagehash"
-	"go.uber.org/zap"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"image/png"
 )
 
 type PHashHandler struct {
-	logger *zap.Logger
+	logger *otelzap.LoggerWithCtx
 }
 
-func NewPHashHandler(logger *zap.Logger) *PHashHandler {
+func NewPHashHandler(logger *otelzap.LoggerWithCtx) *PHashHandler {
 	return &PHashHandler{
 		logger: logger,
 	}

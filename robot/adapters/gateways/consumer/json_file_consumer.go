@@ -5,6 +5,7 @@ import (
 	"automator-go/robot/entities/models"
 	"encoding/json"
 	"fmt"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"os"
 	"sync"
@@ -12,12 +13,12 @@ import (
 
 type TaskQueueConsumerFromJSONFile struct {
 	taskController *tasks.TaskController
-	logger         *zap.Logger
+	logger         *otelzap.LoggerWithCtx
 }
 
 func NewTaskQueueConsumerFromJSONFile(
 	taskController *tasks.TaskController,
-	logger *zap.Logger,
+	logger *otelzap.LoggerWithCtx,
 ) TaskQueueConsumerFromJSONFile {
 	return TaskQueueConsumerFromJSONFile{taskController: taskController, logger: logger}
 }

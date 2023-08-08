@@ -13,6 +13,10 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/extra/bundebug"
+	"github.com/uptrace/bun/extra/bunotel"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
+	"github.com/uptrace/uptrace-go/uptrace"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"log"
@@ -36,6 +40,23 @@ func main() {
 
 	debug := os.Getenv("APP_DEBUG")
 
+	uptraceDsn := os.Getenv("UPTRACE_DSN")
+	if uptraceDsn == "" {
+		log.Fatal("UPTRACE_DSN is required")
+	}
+
+	version := os.Getenv("APP_VERSION")
+
+	// Configure OpenTelemetry with sensible defaults.
+	uptrace.ConfigureOpentelemetry(
+		uptrace.WithDSN(uptraceDsn),
+		uptrace.WithServiceName("robot-rpc-server"),
+		uptrace.WithServiceVersion(version),
+	)
+	defer func(ctx context.Context) {
+		_ = uptrace.Shutdown(ctx)
+	}(ctx)
+
 	var zapLogger *zap.Logger
 	if debug == "true" {
 		zapLogger, err = zap.NewDevelopment()
@@ -46,6 +67,8 @@ func main() {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
 
+	otelLog := otelzap.New(zapLogger, otelzap.WithMinLevel(zapLogger.Level()))
+
 	dsn := os.Getenv("DATABASE_URL")
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
@@ -54,6 +77,7 @@ func main() {
 		bundebug.WithEnabled(false),
 		bundebug.FromEnv("BUNDEBUG"),
 	))
+	db.AddQueryHook(bunotel.NewQueryHook(bunotel.WithDBName("robot")))
 
 	repo := bunRepo.NewBunCaptureMedia(db)
 
@@ -63,17 +87,17 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	authInterceptor := grpcController.NewAuthInterceptor(zapLogger)
+	authInterceptor := grpcController.NewAuthInterceptor(otelLog)
 	s := grpc.NewServer(
-		grpc.UnaryInterceptor(authInterceptor.Unary()),
-		grpc.StreamInterceptor(authInterceptor.Stream()),
+		grpc.ChainUnaryInterceptor(authInterceptor.Unary(), otelgrpc.UnaryServerInterceptor()),
+		grpc.ChainStreamInterceptor(authInterceptor.Stream(), otelgrpc.StreamServerInterceptor()),
 	)
-	grpcDef.RegisterMediaServiceServer(s, grpcController.NewGrpcServer(repo, zapLogger))
+	grpcDef.RegisterMediaServiceServer(s, grpcController.NewGrpcServer(repo, otelLog))
 
 	go func() {
-		zapLogger.Info("Starting server...", zap.Int("port", *port))
+		otelLog.Info("Starting server...", zap.Int("port", *port))
 		if err := s.Serve(lis); err != nil {
-			zapLogger.Fatal("failed to serve: %v", zap.Error(err))
+			otelLog.Fatal("failed to serve: %v", zap.Error(err))
 		}
 	}()
 
@@ -81,7 +105,7 @@ func main() {
 	case <-ctx.Done():
 		s.GracefulStop()
 		_ = lis.Close()
-		zapLogger.Info("Exiting server...")
+		log.Printf("Exiting server...")
 
 		return
 	}

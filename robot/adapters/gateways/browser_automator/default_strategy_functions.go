@@ -196,7 +196,7 @@ func capture(page *rod.Page, action models.TaskAction) (*task.RawMedia, error) {
 		return nil, fmt.Errorf("error parsing timeout stable env: %w", err)
 	}
 
-	if err = page.WaitStable(timeOutStable, 1); err != nil {
+	if err = page.WaitStable(timeOutStable); err != nil {
 		return nil, fmt.Errorf("error waiting element to load: %w", err)
 	}
 

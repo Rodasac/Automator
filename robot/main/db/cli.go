@@ -8,6 +8,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/uptrace/bun/extra/bunotel"
+	"github.com/uptrace/uptrace-go/uptrace"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -20,19 +22,43 @@ import (
 )
 
 func main() {
+	ctx := context.Background()
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
+	uptraceDsn := os.Getenv("UPTRACE_DSN")
+	if uptraceDsn == "" {
+		log.Fatal("UPTRACE_DSN is required")
+	}
+
+	version := os.Getenv("APP_VERSION")
+
+	// Configure OpenTelemetry with sensible defaults.
+	uptrace.ConfigureOpentelemetry(
+		uptrace.WithDSN(uptraceDsn),
+		uptrace.WithServiceName("robot-file-automator"),
+		uptrace.WithServiceVersion(version),
+	)
+	defer func(ctx context.Context) {
+		err := uptrace.Shutdown(ctx)
+		if err != nil {
+			log.Fatalf("can't shutdown uptrace: %v", err)
+		}
+	}(ctx)
+
 	dsn := os.Getenv("DATABASE_URL")
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 
 	db := bun.NewDB(sqldb, pgdialect.New())
-	db.AddQueryHook(bundebug.NewQueryHook(
-		bundebug.WithEnabled(false),
-		bundebug.FromEnv("BUNDEBUG"),
-	))
+	db.AddQueryHook(
+		bundebug.NewQueryHook(
+			bundebug.WithEnabled(false),
+			bundebug.FromEnv("BUNDEBUG"),
+		),
+	)
+	db.AddQueryHook(bunotel.NewQueryHook(bunotel.WithDBName("robot")))
 
 	app := &cli.App{
 		Name: "bun",

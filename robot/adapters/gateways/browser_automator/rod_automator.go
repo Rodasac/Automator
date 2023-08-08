@@ -5,6 +5,7 @@ import (
 	"automator-go/robot/usecases/task"
 	"fmt"
 	"github.com/go-rod/rod"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"os"
 	"strings"
@@ -14,10 +15,10 @@ import (
 type RodAutomator struct {
 	browser  *rod.Browser
 	pagePool rod.PagePool
-	logger   *zap.Logger
+	logger   *otelzap.LoggerWithCtx
 }
 
-func NewRodAutomator(browser *rod.Browser, pagePool rod.PagePool, logger *zap.Logger) *RodAutomator {
+func NewRodAutomator(browser *rod.Browser, pagePool rod.PagePool, logger *otelzap.LoggerWithCtx) *RodAutomator {
 	return &RodAutomator{browser: browser, pagePool: pagePool, logger: logger}
 }
 
@@ -47,7 +48,7 @@ func (at *RodAutomator) Run(taskToRun *models2.Task) (*[]task.RawMedia, error) {
 	page = page.Timeout(pageTimeout)
 	at.logger.Debug("Set page timeout")
 
-	err = page.WaitStable(800*time.Millisecond, 1)
+	err = page.WaitStable(800 * time.Millisecond)
 	if err != nil {
 		return nil, fmt.Errorf("error waiting for page to be stable: %w", err)
 	}

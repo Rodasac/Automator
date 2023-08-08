@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -16,10 +17,10 @@ type AuthInterceptor struct {
 	isAuthRequired bool
 	apiUser        string
 	apiKey         string
-	logger         *zap.Logger
+	logger         *otelzap.Logger
 }
 
-func NewAuthInterceptor(logger *zap.Logger) *AuthInterceptor {
+func NewAuthInterceptor(logger *otelzap.Logger) *AuthInterceptor {
 	isAuthRequired := os.Getenv("API_AUTH_REQUIRED")
 	apiUser := os.Getenv("API_USER")
 	apiKey := os.Getenv("API_KEY")
@@ -37,7 +38,7 @@ func NewAuthInterceptor(logger *zap.Logger) *AuthInterceptor {
 }
 
 func (a *AuthInterceptor) authorize(ctx context.Context, method string) error {
-	a.logger.Debug("Authorize", zap.String("method", method))
+	a.logger.Ctx(ctx).Debug("Authorize", zap.String("method", method))
 
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

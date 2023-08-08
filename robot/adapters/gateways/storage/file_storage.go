@@ -4,16 +4,16 @@ import (
 	"automator-go/robot/usecases/task"
 	"fmt"
 	"github.com/nlepage/go-cuid2"
-	"go.uber.org/zap"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"os"
 )
 
 type FileStorage struct {
 	MediaExtension string
-	logger         *zap.Logger
+	logger         *otelzap.LoggerWithCtx
 }
 
-func NewFileStorage(extension string, logger *zap.Logger) *FileStorage {
+func NewFileStorage(extension string, logger *otelzap.LoggerWithCtx) *FileStorage {
 	if extension == "" {
 		extension = "png"
 	}

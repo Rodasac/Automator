@@ -10,7 +10,7 @@ import (
 	"context"
 	"github.com/go-rod/rod"
 	"github.com/uptrace/bun"
-	"go.uber.org/zap"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 )
 
 type TaskController struct {
@@ -18,7 +18,7 @@ type TaskController struct {
 	pagePool rod.PagePool
 	db       *bun.DB
 	ctx      context.Context
-	logger   *zap.Logger
+	logger   *otelzap.LoggerWithCtx
 }
 
 func NewTaskController(
@@ -26,7 +26,7 @@ func NewTaskController(
 	pagePool rod.PagePool,
 	db *bun.DB,
 	ctx context.Context,
-	logger *zap.Logger,
+	logger *otelzap.LoggerWithCtx,
 ) *TaskController {
 	return &TaskController{
 		browser:  browser,

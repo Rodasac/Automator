@@ -6,7 +6,7 @@
 - [x] Add a robot grpc server to provide a way for another services to retrieve tasks results.
 - [x] Add pagination to the robot grpc server.
 - [x] Add API KEY authentication to the robot grpc server.
-- [ ] Add Telemetry to the robot component.
+- [x] Add Telemetry to the robot component.
 - [ ] Add robot binary to use the queue consumer.
 - [ ] Add integration tests.
 - [ ] Create build and test pipeline strategy.
