@@ -7,48 +7,77 @@ import (
 	"encoding/json"
 	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
+	"go.uber.org/zap"
 )
 
 type RabbitTaskQueueConsumer struct {
-	taskController *tasks.TaskController
 	ch             *amqp.Channel
-	chName         string
-	consumerName   string
+	taskController *tasks.TaskController
+	logger         *otelzap.LoggerWithCtx
 	ctx            context.Context
+	queueName      string
+	consumerName   string
+	bindingKey     string
+	exchange       string
 }
 
 func NewRabbitTaskQueueConsumer(
-	taskController *tasks.TaskController,
 	ch *amqp.Channel,
-	chName string,
-	consumerName string,
+	taskController *tasks.TaskController,
+	logger *otelzap.LoggerWithCtx,
 	ctx context.Context,
+	queueName string,
+	consumerName string,
+	bindingKey string,
+	exchange string,
 ) RabbitTaskQueueConsumer {
 	return RabbitTaskQueueConsumer{
-		taskController: taskController,
 		ch:             ch,
-		chName:         chName,
-		consumerName:   consumerName,
+		taskController: taskController,
+		logger:         logger,
 		ctx:            ctx,
+		queueName:      queueName,
+		consumerName:   consumerName,
+		bindingKey:     bindingKey,
+		exchange:       exchange,
 	}
 }
 
-func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
-	q, err := t.ch.QueueDeclare(
-		t.chName,
-		false,
+func (t RabbitTaskQueueConsumer) startConsumer() (<-chan amqp.Delivery, error) {
+	t.logger.Debug("declared Exchange, declaring Queue", zap.String("queue", t.queueName))
+	queue, err := t.ch.QueueDeclare(
+		t.queueName,
+		true,
 		false,
 		false,
 		false,
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("error declaring queue: %w", err)
+		return nil, fmt.Errorf("queue declare: %s", err)
 	}
 
-	msgs, err := t.ch.Consume(
-		q.Name,
+	t.logger.Debug(
+		"declared Queue, binding to Exchange",
+		zap.String("exchange", t.exchange),
+		zap.String("queue", t.queueName),
+		zap.String("bindingKey", t.bindingKey),
+	)
+
+	if err = t.ch.QueueBind(
+		queue.Name,
+		t.bindingKey,
+		t.exchange,
+		false,
+		nil,
+	); err != nil {
+		return nil, fmt.Errorf("queue bind: %s", err)
+	}
+
+	t.logger.Debug("Queue bound to Exchange, starting Consume", zap.String("consumerTag", t.consumerName))
+	deliveries, err := t.ch.Consume(
+		queue.Name,
 		t.consumerName,
 		false,
 		false,
@@ -57,19 +86,28 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("error consuming queue: %w", err)
+		return nil, fmt.Errorf("queue consume: %s", err)
+	}
+
+	return deliveries, nil
+}
+
+func (t RabbitTaskQueueConsumer) ConsumeTasks() []error {
+	deliveries, err := t.startConsumer()
+	if err != nil {
+		return []error{err}
 	}
 
 	go func() {
-		for d := range msgs {
-			log.Printf("Received task: %s", d.Body)
+		for d := range deliveries {
+			t.logger.Debug("received message", zap.ByteString("body", d.Body))
 			var taskToProcess models.Task
 			err = json.Unmarshal(d.Body, &taskToProcess)
 			if err != nil {
-				log.Printf("Error unmarshalling task: %s", err)
+				t.logger.Error("Error unmarshalling task", zap.Error(err))
 				err := d.Nack(false, false)
 				if err != nil {
-					log.Printf("Error nacknowledging message: %s", err)
+					t.logger.Error("Error nacknowledging message", zap.Error(err))
 				}
 
 				continue
@@ -77,10 +115,10 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
 
 			err = t.taskController.ProcessTask(&taskToProcess)
 			if err != nil {
-				log.Printf("Error processing task: %s", err)
+				t.logger.Error("Error processing task", zap.Error(err))
 				err := d.Nack(false, false)
 				if err != nil {
-					log.Printf("Error nacknowledging message: %s", err)
+					t.logger.Error("Error nacknowledging message", zap.Error(err))
 				}
 
 				continue
@@ -88,12 +126,12 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() error {
 
 			err = d.Ack(true)
 			if err != nil {
-				log.Printf("Error acknowledging message: %s", err)
+				t.logger.Error("Error acknowledging message", zap.Error(err))
 			}
 		}
 	}()
 
-	log.Printf(" [*] Waiting for tasks. To exit press CTRL+C")
+	t.logger.Info("[*] Waiting for tasks. To exit press CTRL+C")
 	<-t.ctx.Done()
 
 	return nil
