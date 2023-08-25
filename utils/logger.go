@@ -7,10 +7,10 @@ import (
 	"log"
 )
 
-func StartLogger(ctx context.Context, debug string) otelzap.LoggerWithCtx {
+func StartLogger(ctx context.Context, debug bool) otelzap.LoggerWithCtx {
 	var zapLogger *zap.Logger
 	var err error
-	if debug == "true" {
+	if debug {
 		zapLogger, err = zap.NewDevelopment()
 	} else {
 		zapLogger, err = zap.NewProduction()

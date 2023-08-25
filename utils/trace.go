@@ -4,15 +4,21 @@ import (
 	"context"
 	"github.com/uptrace/uptrace-go/uptrace"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 	"log"
 	"os"
 )
 
-func StartTrace(serviceName string, version string) {
+func StartTrace(serviceName, version string, debug bool) {
 	uptraceDsn := os.Getenv("UPTRACE_DSN")
 	if uptraceDsn == "" {
 		log.Fatal("UPTRACE_DSN is required")
+	}
+
+	env := "production"
+	if debug {
+		env = "development"
 	}
 
 	// Configure OpenTelemetry with sensible defaults.
@@ -20,6 +26,9 @@ func StartTrace(serviceName string, version string) {
 		uptrace.WithDSN(uptraceDsn),
 		uptrace.WithServiceName(serviceName),
 		uptrace.WithServiceVersion(version),
+		uptrace.WithResourceAttributes(
+			attribute.String("deployment.environment", env),
+		),
 	)
 }
 

@@ -39,6 +39,11 @@ receivers:
           scrape_interval: 10s
           static_configs:
             - targets: ['0.0.0.0:8888']
+  rabbitmq:
+    endpoint: http://rabbitmq:15672
+    username: guest
+    password: guest
+    collection_interval: 10s
 
 processors:
   resourcedetection:
@@ -67,11 +72,11 @@ service:
       processors: [batch]
       exporters: [otlp/uptrace, logging]
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, rabbitmq]
       processors: [batch]
       exporters: [otlp/uptrace]
     metrics/hostmetrics:
-      receivers: [hostmetrics, postgresql, prometheus/otelcol]
+      receivers: [hostmetrics, postgresql, prometheus/otelcol, rabbitmq]
       processors: [batch, resourcedetection]
       exporters: [otlp/uptrace]
     logs:

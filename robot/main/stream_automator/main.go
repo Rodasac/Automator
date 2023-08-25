@@ -28,7 +28,8 @@ func main() {
 	ctx, stop := context.WithCancel(context.Background())
 	defer stop()
 
-	debug := os.Getenv("APP_DEBUG")
+	debugEnv := os.Getenv("APP_DEBUG")
+	debug := debugEnv == "true"
 	version := os.Getenv("APP_VERSION")
 	pagePoolNumberStr := os.Getenv("PAGE_POOL_SIZE")
 	pagePoolNumber, err := strconv.Atoi(pagePoolNumberStr)
@@ -36,7 +37,7 @@ func main() {
 		log.Fatal("PAGE_POOL_SIZE is required")
 	}
 
-	utils2.StartTrace(serviceName, version)
+	utils2.StartTrace(serviceName, version, debug)
 	defer utils2.ShutdownTrace(ctx)
 
 	ctx, span := utils2.StartSpan(ctx, serviceName, "root")
