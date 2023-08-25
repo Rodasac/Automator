@@ -100,12 +100,13 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() []error {
 
 	go func() {
 		for d := range deliveries {
-			t.logger.Debug("received message", zap.ByteString("body", d.Body))
+			delivery := d
+			t.logger.Debug("received message", zap.ByteString("body", delivery.Body))
 			var taskToProcess models.Task
-			err = json.Unmarshal(d.Body, &taskToProcess)
+			err = json.Unmarshal(delivery.Body, &taskToProcess)
 			if err != nil {
 				t.logger.Error("Error unmarshalling task", zap.Error(err))
-				err := d.Nack(false, false)
+				err := delivery.Nack(false, false)
 				if err != nil {
 					t.logger.Error("Error nacknowledging message", zap.Error(err))
 				}
@@ -113,21 +114,24 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() []error {
 				continue
 			}
 
-			err = t.taskController.ProcessTask(&taskToProcess)
-			if err != nil {
-				t.logger.Error("Error processing task", zap.Error(err))
-				err := d.Nack(false, false)
+			// Process tasks concurrently
+			go func() {
+				err = t.taskController.ProcessTask(&taskToProcess)
 				if err != nil {
-					t.logger.Error("Error nacknowledging message", zap.Error(err))
+					t.logger.Error("Error processing task", zap.Error(err))
+					err := delivery.Nack(false, false)
+					if err != nil {
+						t.logger.Error("Error nacknowledging message", zap.Error(err))
+					}
+
+					return
 				}
 
-				continue
-			}
-
-			err = d.Ack(true)
-			if err != nil {
-				t.logger.Error("Error acknowledging message", zap.Error(err))
-			}
+				err = delivery.Ack(true)
+				if err != nil {
+					t.logger.Error("Error acknowledging message", zap.Error(err))
+				}
+			}()
 		}
 	}()
 
