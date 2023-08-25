@@ -30,10 +30,10 @@ func main() {
 
 	debug := os.Getenv("APP_DEBUG")
 	version := os.Getenv("APP_VERSION")
-	pagePoolNumberStr := os.Getenv("PAGE_POOL_NUMBER")
+	pagePoolNumberStr := os.Getenv("PAGE_POOL_SIZE")
 	pagePoolNumber, err := strconv.Atoi(pagePoolNumberStr)
 	if err != nil {
-		log.Fatal("PAGE_POOL_NUMBER is required")
+		log.Fatal("PAGE_POOL_SIZE is required")
 	}
 
 	utils.StartTrace(serviceName, version)
