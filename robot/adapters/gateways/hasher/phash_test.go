@@ -2,13 +2,15 @@ package hasher
 
 import (
 	"bytes"
+	"context"
+	"github.com/uptrace/opentelemetry-go-extra/otelzap"
 	"go.uber.org/zap"
 	"os"
 	"testing"
 )
 
 func TestPHashHandler(t *testing.T) {
-	logger := zap.NewExample()
+	logger := otelzap.New(zap.NewExample(), otelzap.WithMinLevel(zap.DebugLevel)).Ctx(context.Background())
 	imageFile, err := os.Open("../../../testing_resources/test.png")
 	if err != nil {
 		t.Fatalf("error opening image: %v", err)
@@ -54,7 +56,7 @@ func TestPHashHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := NewPHashHandler(logger)
+			handler := NewPHashHandler(&logger)
 			got, err := handler.Hash(tt.image)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("PHashHandler.Hash() error = %v, wantErr %v", err, tt.wantErr)

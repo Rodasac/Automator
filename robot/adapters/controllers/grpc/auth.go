@@ -14,10 +14,10 @@ import (
 )
 
 type AuthInterceptor struct {
-	isAuthRequired bool
+	logger         *otelzap.Logger
 	apiUser        string
 	apiKey         string
-	logger         *otelzap.Logger
+	isAuthRequired bool
 }
 
 func NewAuthInterceptor(logger *otelzap.Logger) *AuthInterceptor {
@@ -30,10 +30,10 @@ func NewAuthInterceptor(logger *otelzap.Logger) *AuthInterceptor {
 	}
 
 	return &AuthInterceptor{
-		isAuthRequired: isAuthRequired == "true",
+		logger:         logger,
 		apiUser:        apiUser,
 		apiKey:         apiKey,
-		logger:         logger,
+		isAuthRequired: isAuthRequired == "true",
 	}
 }
 

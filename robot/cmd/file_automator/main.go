@@ -14,8 +14,9 @@ import (
 	"strconv"
 )
 
-const serviceName = "robot-stream-automator"
+const serviceName = "robot-file-automator"
 
+// This is meant to be used for testing purposes only.
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -42,37 +43,42 @@ func main() {
 
 	ctx, span := utils2.StartSpan(ctx, serviceName, "root")
 
-	logWithCtx := utils2.StartLogger(ctx, debug)
+	logWithCtx := utils2.StartLoggerWithCtx(ctx, debug)
 
 	db := utils2.OpenDb()
 
+	browser := rod.New().Context(ctx)
+	err = browser.Connect()
+	if err != nil {
+		logWithCtx.Fatal("error connecting to browser", zap.Error(err))
+	}
+	logWithCtx.Debug("Connected to browser")
+
+	pagePool := rod.NewPagePool(pagePoolNumber)
+
+	taskController := taskControllers.NewTaskController(browser, pagePool, db, ctx, &logWithCtx)
+	consumerController := controllerConsumer.NewFileConsumerController(taskController, &logWithCtx)
+
 	go func() {
-		browser := rod.New().Context(ctx)
-		err = browser.Connect()
-		if err != nil {
-			logWithCtx.Fatal("error connecting to browser", zap.Error(err))
-		}
-		logWithCtx.Debug("Connected to browser")
-
-		pagePool := rod.NewPagePool(pagePoolNumber)
-
-		taskController := taskControllers.NewTaskController(browser, pagePool, db, ctx, &logWithCtx)
-		consumerController := controllerConsumer.NewRabbitConsumerController(taskController, &logWithCtx, ctx)
-
 		errs := consumerController.ConsumeTasks()
-		if errs != nil && len(errs) > 0 {
+		if len(errs) > 0 {
 			logWithCtx.Fatal("error processing tasks", zap.Errors("errors", errs))
 		}
 
+		// Because this is a file consumer we finish here.
+		// But, this may not occur on streams implementations.
 		pagePool.Cleanup(func(page *rod.Page) {
 			err := page.Close()
 			if err != nil {
 				logWithCtx.Error("error closing page", zap.Error(err))
 			}
 		})
+
+		// We need to stop manually
+		close(stopSignal)
 	}()
 
 	<-stopSignal
 	span.End()
-	logWithCtx.Info("Shutting down")
+	logWithCtx.Info("Exiting...")
 }

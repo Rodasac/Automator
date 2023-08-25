@@ -275,6 +275,9 @@ func writeTime(page *rod.Page, action models.TaskAction) error {
 	}
 
 	timeToWrite, err := time.Parse(timeLayout, action.Value)
+	if err != nil {
+		return fmt.Errorf("error parsing time: %w", err)
+	}
 
 	err = element.InputTime(timeToWrite)
 	if err != nil {

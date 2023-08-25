@@ -7,6 +7,6 @@
 - [x] Add pagination to the robot grpc server.
 - [x] Add API KEY authentication to the robot grpc server.
 - [x] Add Telemetry to the robot component.
-- [ ] Add robot binary to use the queue consumer.
+- [x] Add robot binary to use the queue consumer.
 - [ ] Add integration tests.
-- [ ] Create build and test pipeline strategy.
+- [x] Create build and test pipeline strategy.

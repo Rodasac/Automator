@@ -1,7 +1,7 @@
 package main
 
 import (
-	"automator-go/robot/main/db/migrations"
+	"automator-go/robot/cmd/db/migrations"
 	"context"
 	"database/sql"
 	"fmt"

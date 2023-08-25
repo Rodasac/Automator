@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func StartLogger(ctx context.Context, debug bool) otelzap.LoggerWithCtx {
+func StartLogger(debug bool) *otelzap.Logger {
 	var zapLogger *zap.Logger
 	var err error
 	if debug {
@@ -19,7 +19,9 @@ func StartLogger(ctx context.Context, debug bool) otelzap.LoggerWithCtx {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
 
-	otelLog := otelzap.New(zapLogger, otelzap.WithMinLevel(zapLogger.Level()))
+	return otelzap.New(zapLogger, otelzap.WithMinLevel(zapLogger.Level()))
+}
 
-	return otelLog.Ctx(ctx)
+func StartLoggerWithCtx(ctx context.Context, debug bool) otelzap.LoggerWithCtx {
+	return StartLogger(debug).Ctx(ctx)
 }
