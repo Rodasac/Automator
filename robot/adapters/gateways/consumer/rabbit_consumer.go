@@ -18,8 +18,6 @@ type RabbitTaskQueueConsumer struct {
 	ctx            context.Context
 	queueName      string
 	consumerName   string
-	bindingKey     string
-	exchange       string
 }
 
 func NewRabbitTaskQueueConsumer(
@@ -29,8 +27,6 @@ func NewRabbitTaskQueueConsumer(
 	ctx context.Context,
 	queueName string,
 	consumerName string,
-	bindingKey string,
-	exchange string,
 ) RabbitTaskQueueConsumer {
 	return RabbitTaskQueueConsumer{
 		ch:             ch,
@@ -39,45 +35,13 @@ func NewRabbitTaskQueueConsumer(
 		ctx:            ctx,
 		queueName:      queueName,
 		consumerName:   consumerName,
-		bindingKey:     bindingKey,
-		exchange:       exchange,
 	}
 }
 
 func (t RabbitTaskQueueConsumer) startConsumer() (<-chan amqp.Delivery, error) {
-	t.logger.Debug("declared Exchange, declaring Queue", zap.String("queue", t.queueName))
-	queue, err := t.ch.QueueDeclare(
-		t.queueName,
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("queue declare: %s", err)
-	}
-
-	t.logger.Debug(
-		"declared Queue, binding to Exchange",
-		zap.String("exchange", t.exchange),
-		zap.String("queue", t.queueName),
-		zap.String("bindingKey", t.bindingKey),
-	)
-
-	if err = t.ch.QueueBind(
-		queue.Name,
-		t.bindingKey,
-		t.exchange,
-		false,
-		nil,
-	); err != nil {
-		return nil, fmt.Errorf("queue bind: %s", err)
-	}
-
 	t.logger.Debug("Queue bound to Exchange, starting Consume", zap.String("consumerTag", t.consumerName))
 	deliveries, err := t.ch.Consume(
-		queue.Name,
+		t.queueName,
 		t.consumerName,
 		false,
 		false,

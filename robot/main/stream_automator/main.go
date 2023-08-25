@@ -3,7 +3,7 @@ package main
 import (
 	controllerConsumer "automator-go/robot/adapters/controllers/consumer"
 	taskControllers "automator-go/robot/adapters/controllers/tasks"
-	"automator-go/robot/main/utils"
+	utils2 "automator-go/utils"
 	"context"
 	"github.com/go-rod/rod"
 	"github.com/joho/godotenv"
@@ -36,14 +36,14 @@ func main() {
 		log.Fatal("PAGE_POOL_SIZE is required")
 	}
 
-	utils.StartTrace(serviceName, version)
-	defer utils.ShutdownTrace(ctx)
+	utils2.StartTrace(serviceName, version)
+	defer utils2.ShutdownTrace(ctx)
 
-	ctx, span := utils.StartSpan(ctx, serviceName, "root")
+	ctx, span := utils2.StartSpan(ctx, serviceName, "root")
 
-	logWithCtx := utils.StartLogger(ctx, debug)
+	logWithCtx := utils2.StartLogger(ctx, debug)
 
-	db := utils.OpenDb()
+	db := utils2.OpenDb()
 
 	go func() {
 		browser := rod.New().Context(ctx)

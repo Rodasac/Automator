@@ -32,18 +32,14 @@ func (c *Consumer) Shutdown() error {
 	return <-c.done
 }
 
-func StartConsumer(log *otelzap.LoggerWithCtx, consumerName string) (*Consumer, error) {
+func StartClient(log *otelzap.LoggerWithCtx, consumerName string) (*Consumer, error) {
 	uri := os.Getenv("RABBITMQ_URI")
-	if uri == "" {
-		log.Fatal("RABBITMQ_URI is required")
-	}
 	exchange := os.Getenv("RABBITMQ_EXCHANGE")
-	if exchange == "" {
-		log.Fatal("RABBITMQ_EXCHANGE is required")
-	}
 	exchangeType := os.Getenv("RABBITMQ_EXCHANGE_TYPE")
-	if exchangeType == "" {
-		log.Fatal("RABBITMQ_EXCHANGE_TYPE is required")
+	queueName := os.Getenv("RABBITMQ_QUEUE_NAME")
+	bindingKey := os.Getenv("RABBITMQ_BINDING_KEY")
+	if uri == "" || exchange == "" || exchangeType == "" || queueName == "" || bindingKey == "" {
+		return nil, fmt.Errorf("environment variables for rabbit not set")
 	}
 
 	c := &Consumer{
@@ -85,6 +81,36 @@ func StartConsumer(log *otelzap.LoggerWithCtx, consumerName string) (*Consumer, 
 		nil,
 	); err != nil {
 		return nil, fmt.Errorf("exchange declare: %s", err)
+	}
+
+	log.Debug("declared Exchange, declaring Queue", zap.String("queue", queueName))
+	queue, err := c.Channel.QueueDeclare(
+		queueName,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("queue declare: %s", err)
+	}
+
+	log.Debug(
+		"declared Queue, binding to Exchange",
+		zap.String("exchange", exchange),
+		zap.String("queue", queueName),
+		zap.String("bindingKey", bindingKey),
+	)
+
+	if err = c.Channel.QueueBind(
+		queue.Name,
+		bindingKey,
+		exchange,
+		false,
+		nil,
+	); err != nil {
+		return nil, fmt.Errorf("queue bind: %s", err)
 	}
 
 	return c, nil
