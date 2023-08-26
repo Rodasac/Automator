@@ -91,7 +91,7 @@ func (t RabbitTaskQueueConsumer) ConsumeTasks() []error {
 					return
 				}
 
-				err = delivery.Ack(true)
+				err = delivery.Ack(false)
 				if err != nil {
 					t.logger.Error("Error acknowledging message", zap.Error(err))
 				}
