@@ -8,14 +8,15 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/joho/godotenv"
-	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-	"go.uber.org/zap"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+
+	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -59,8 +60,9 @@ func main() {
 
 	authInterceptor := grpcController.NewAuthInterceptor(logger)
 	s := grpc.NewServer(
-		grpc.ChainUnaryInterceptor(authInterceptor.Unary(), otelgrpc.UnaryServerInterceptor()),
-		grpc.ChainStreamInterceptor(authInterceptor.Stream(), otelgrpc.StreamServerInterceptor()),
+		grpc.ChainUnaryInterceptor(authInterceptor.Unary()),
+		grpc.ChainStreamInterceptor(authInterceptor.Stream()),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 	grpcDef.RegisterMediaServiceServer(s, grpcController.NewGrpcServer(repo, logger))
 
