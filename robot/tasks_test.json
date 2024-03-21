@@ -57,15 +57,21 @@
     "id": "4",
     "title": "Wikipedia Video",
     "description": "Wikipedia video resource",
-    "url": "https://en.wikipedia.org/wiki/Video",
+    "url": "https://es.wikipedia.org/wiki/Wikipedia:Recursos_destacados/Videos",
     "country": "VE",
     "with_proxy": false,
     "actions": [
       {
         "id": "1",
+        "label": "Wait for page",
+        "type": "WaitSeconds",
+        "value": "2"
+      },
+      {
+        "id": "2",
         "label": "Click video link",
         "type": "Click",
-        "value": "#mw-content-text > div.mw-parser-output > figure:nth-child(9) > span > span > a"
+        "value": "#mw-content-text > div.mw-content-ltr.mw-parser-output > ul > li:nth-child(1) > div.thumb > span > span > span > a"
       },
       {
         "id": "3",

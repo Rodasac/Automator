@@ -43,7 +43,7 @@ Automator uses a simple and easy to use API to create tasks and monitor them. It
 1. Clone the repository
 2. Run `docker-compose up -d` to start the database and queue services.
 3. Copy the .env.template file to .env inside every service and fill the variables.
-4. Run robot migrations `cd robot && go run main/db/cli.go init && go run main/db/cli.go migrate`
-5. Start the robot `go run main/file_automator/main.go`
-6. Start the robot grpc server `go run main/grpc_server/main.go` (starts on port 50051, you can see grpc/media.proto for
+4. Run robot migrations `cd robot && go run cmd/db/cli.go db init && go run cmd/db/cli.go db migrate`
+5. Start the robot `go run cmd/file_automator/main.go`
+6. Start the robot grpc server `go run cmd/grpc_server/main.go` (starts on port 50051, you can see grpc/media.proto for
    the available methods)
